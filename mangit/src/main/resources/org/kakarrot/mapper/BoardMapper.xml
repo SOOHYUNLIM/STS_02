@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.kakarrot.mapper.BoardMapper">
+
+	<!-- <insert id="insert"> insert into tbl_board (title, content, writer) 
+		values (#{title}, #{content},#{writer}) </insert> -->
+
+	<select id="selectList" resultType="org.kakarrot.domain.BoardVO">
+		<![CDATA[select * from
+		(select rownum rn, tb.* from
+		(select * from tbl_board
+		order by bno desc) tb
+		where rownum<=#{page}*#{amount})
+		where rn>(#{page}-1)*#{amount}]]>
+	</select>
+
+	<select id="searchList" resultType="org.kakarrot.domain.BoardVO">
+<![CDATA[
+		select *from
+		(select rownum rn, tb.* from tbl_board tb
+		where rownum <= 20
+		]]>
+<include refid="search"></include>
+		)
+	<![CDATA[	where rn > 10]]>
+	</select>
+	
+	<!-- select * from tbl_board where bno > 0 <include refid="search"></include> 
+		order by bno desc limit #{skip}, #{amount} -->
+	<!-- <select id="searchCount" resultType="int">
+		SELECT count(bno)
+		FROM tbl_board
+		WHERE bno > 0
+		<include refid="search"></include>
+	</select> -->
+
+	<sql id="search">
+		<if test="keyword != null">
+			<foreach collection="types" item="item" open="AND (" close=")"
+				separator="OR">
+
+				<if test="item eq 'T'.toString()">
+					title like '%'||#{keyword}||'%'
+				</if>
+
+				<if test="item eq 'C'.toString()">
+					content like '%'||#{keyword}||'%'
+				</if>
+
+				<if test="item eq 'W'.toString()">
+					writer like '%'||#{keyword}||'%'
+				</if>
+
+			</foreach>
+		</if>
+	</sql>
+
+</mapper>
